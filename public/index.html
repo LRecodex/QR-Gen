@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Generator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Inter, Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at top left, rgba(77, 156, 185, 0.28), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(99, 102, 241, 0.22), transparent 35%),
+                linear-gradient(135deg, #f8fbfd 0%, #eef5f8 100%);
+            color: #172033;
+            padding: 40px 20px;
+        }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 430px;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .hero {
+            padding: 30px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(77, 156, 185, 0.25);
+            color: #2d7f99;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(77, 156, 185, 0.12);
+        }
+
+        .hero h1 {
+            font-size: clamp(40px, 6vw, 72px);
+            line-height: 1;
+            letter-spacing: -3px;
+            margin-bottom: 20px;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, #4D9CB9, #6366f1);
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .hero p {
+            max-width: 620px;
+            font-size: 18px;
+            line-height: 1.7;
+            color: #5b6475;
+            margin-bottom: 28px;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+            max-width: 620px;
+        }
+
+        .feature {
+            padding: 16px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 12px 30px rgba(23, 32, 51, 0.06);
+            font-weight: 700;
+            color: #29344a;
+        }
+
+        .card {
+            position: relative;
+            background: rgba(255, 255, 255, 0.84);
+            backdrop-filter: blur(18px);
+            border-radius: 32px;
+            padding: 28px;
+            box-shadow:
+                0 30px 80px rgba(23, 32, 51, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #4D9CB9, #6366f1, #22c55e);
+        }
+
+        .card-header {
+            margin-bottom: 24px;
+        }
+
+        .card-header h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .card-header p {
+            color: #6b7280;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 14px;
+            font-weight: 800;
+            color: #243047;
+            margin-bottom: 8px;
+        }
+
+        .hint {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8a94a6;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 14px 15px;
+            border-radius: 16px;
+            border: 1px solid #dce5ec;
+            background: #ffffff;
+            color: #1f2937;
+            font-size: 15px;
+            outline: none;
+            transition: 0.2s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #4D9CB9;
+            box-shadow: 0 0 0 4px rgba(77, 156, 185, 0.14);
+        }
+
+        input[type="color"] {
+            height: 52px;
+            padding: 6px;
+            cursor: pointer;
+        }
+
+        input[type="file"] {
+            padding: 12px;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            margin-top: 8px;
+            padding: 16px 20px;
+            border: 0;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #4D9CB9, #6366f1);
+            color: white;
+            font-size: 16px;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 16px 35px rgba(77, 156, 185, 0.35);
+            transition: 0.2s ease;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 22px 45px rgba(77, 156, 185, 0.45);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .preview-box {
+            margin-top: 22px;
+            border-radius: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc, #eef6f9);
+            border: 1px dashed rgba(77, 156, 185, 0.45);
+            text-align: center;
+            color: #6b7280;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .preview-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 12px;
+            border-radius: 22px;
+            background:
+                linear-gradient(90deg, #172033 10px, transparent 10px) 0 0 / 20px 20px,
+                linear-gradient(#172033 10px, transparent 10px) 0 0 / 20px 20px,
+                #ffffff;
+            box-shadow: inset 0 0 0 8px #fff, 0 15px 25px rgba(23, 32, 51, 0.08);
+        }
+
+        .footer-note {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 12px;
+            color: #8a94a6;
+        }
+
+        @media (max-width: 960px) {
+            .page {
+                grid-template-columns: 1fr;
+            }
+
+            .hero {
+                padding: 10px;
+                text-align: center;
+            }
+
+            .hero p,
+            .feature-list {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
+        @media (max-width: 520px) {
+            body {
+                padding: 22px 14px;
+            }
+
+            .card {
+                padding: 22px;
+                border-radius: 24px;
+            }
+
+            .grid-2,
+            .feature-list {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <section class="hero">
+            <div class="badge">✨ Professional QR Design Tool</div>
+
+            <h1>Create QR codes that look <span>premium.</span></h1>
+
+            <p>
+                Generate clean, branded QR codes for websites, Instagram stories,
+                business cards, posters, campaigns, and product packaging.
+            </p>
+
+            <div class="feature-list">
+                <div class="feature">🎨 Custom QR colors</div>
+                <div class="feature">🖼️ Logo in center</div>
+                <div class="feature">📱 Instagram Story size</div>
+                <div class="feature">⬇️ Ready to download</div>
+            </div>
+        </section>
+
+        <section class="card">
+            <div class="card-header">
+                <h2>Generate QR</h2>
+                <p>Fill in your details and create a high-quality QR image instantly.</p>
+            </div>
+
+            <form action="/generate" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>
+                        URL
+                        <span class="hint">Required</span>
+                    </label>
+                    <input type="url" name="url" required placeholder="https://example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Center Logo
+                        <span class="hint">Optional</span>
+                    </label>
+                    <input type="file" name="logo" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Text Below QR
+                        <span class="hint">Optional</span>
+                    </label>
+                    <input type="text" name="text" placeholder="Scan Me">
+                </div>
+
+                <div class="form-group">
+                    <label>Canvas Size</label>
+                    <select onchange="setSize(this.value)">
+                        <option value="square">Square 1080 × 1080</option>
+                        <option value="story">Instagram Story 1080 × 1920</option>
+                        <option value="custom">Custom Size</option>
+                    </select>
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Width</label>
+                        <input type="number" name="width" id="width" value="1080">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Height</label>
+                        <input type="number" name="height" id="height" value="1080">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>QR Size</label>
+                    <input type="number" name="qrSize" value="680">
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>QR Color</label>
+                        <input type="color" name="qrColor" value="#111827">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Background</label>
+                        <input type="color" name="bgColor" value="#ffffff">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    Generate QR Code
+                </button>
+            </form>
+
+            <div class="preview-box">
+                <div class="preview-icon"></div>
+                Your QR code will be generated as a clean PNG image.
+            </div>
+
+            <div class="footer-note">
+                Best for posters, social media, packaging, and business profiles.
+            </div>
+        </section>
+    </main>
+
+    <script>
+        function setSize(value) {
+            const width = document.getElementById("width");
+            const height = document.getElementById("height");
+
+            if (value === "square") {
+                width.value = 1080;
+                height.value = 1080;
+            }
+
+            if (value === "story") {
+                width.value = 1080;
+                height.value = 1920;
+            }
+        }
+    </script>
+</body>
+</html>
