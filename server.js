@@ -19,6 +19,7 @@ app.post("/generate", upload.single("logo"), async (req, res) => {
     const {
       url,
       text = "",
+      subtext = "",
       qrColor = "#000000",
       bgColor = "#ffffff",
       width = 1080,
@@ -90,7 +91,7 @@ app.post("/generate", upload.single("logo"), async (req, res) => {
             gravity: "center",
           },
         ])
-        .blur(0.1)
+        .blur(0.3)
         .toBuffer();
 
       qrImage = qrImage.composite([
@@ -104,7 +105,9 @@ app.post("/generate", upload.single("logo"), async (req, res) => {
     const qrFinalBuffer = await qrImage.png().toBuffer();
 
     const cardPadding = Math.max(30, Math.round(finalQrSize * 0.06));
-    const textReservedHeight = text ? 120 : 0;
+    const hasHeadline = Boolean(text && String(text).trim());
+    const hasSubtext = Boolean(subtext && String(subtext).trim());
+    const textReservedHeight = hasHeadline || hasSubtext ? 230 : 0;
     const panelWidth = finalQrSize + cardPadding * 2;
     const panelHeight = finalQrSize + cardPadding * 2 + textReservedHeight;
     const panelX = Math.round((canvasWidth - panelWidth) / 2);
@@ -124,21 +127,47 @@ app.post("/generate", upload.single("logo"), async (req, res) => {
       </svg>
     `;
 
-    const svgText = text
+    const headlineText = hasHeadline ? escapeXml(String(text).trim()) : "";
+    const sublineText = hasSubtext ? escapeXml(String(subtext).trim()) : "";
+    const badgeY = qrY + finalQrSize + 28;
+    const textBaseY = qrY + finalQrSize + 116;
+
+    const svgText = hasHeadline || hasSubtext
       ? `
       <svg width="${canvasWidth}" height="${canvasHeight}">
+        <defs>
+          <linearGradient id="titleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="${safeQrColor}"/>
+            <stop offset="100%" stop-color="#334155"/>
+          </linearGradient>
+          <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.14"/>
+          </filter>
+        </defs>
         <style>
-          .title {
-            fill: ${safeQrColor};
-            font-size: 48px;
+          .headline {
+            fill: url(#titleGradient);
+            font-size: 44px;
             font-weight: 700;
-            letter-spacing: 1px;
-            font-family: "Avenir Next", "Montserrat", "Helvetica Neue", Arial, sans-serif;
+            letter-spacing: 2px;
+            font-family: "Avenir Next", "Montserrat", "Poppins", "Helvetica Neue", Arial, sans-serif;
+            text-transform: uppercase;
+          }
+          .subline {
+            fill: #64748b;
+            font-size: 30px;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            font-family: "Avenir Next", "Montserrat", "Poppins", "Helvetica Neue", Arial, sans-serif;
           }
         </style>
-        <text x="50%" y="${qrY + finalQrSize + 76}" text-anchor="middle" class="title">${escapeXml(
-          text
-        )}</text>
+        <rect x="${Math.round(canvasWidth / 2) - 210}" y="${badgeY}" width="420" height="52" rx="26" ry="26" fill="${safeQrColor}" opacity="0.94"/>
+        <text x="50%" y="${badgeY + 35}" text-anchor="middle" style="fill:#ffffff;font-size:26px;font-weight:800;letter-spacing:1.8px;font-family:'Avenir Next','Montserrat','Poppins',Arial,sans-serif;text-transform:uppercase;">${headlineText}</text>
+        ${
+          hasSubtext
+            ? `<text x="50%" y="${textBaseY + (hasHeadline ? 48 : 0)}" text-anchor="middle" class="subline">${sublineText}</text>`
+            : ""
+        }
       </svg>`
       : null;
 
